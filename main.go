@@ -1,10 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -24,20 +26,44 @@ start_time:=time.Now()
 		fmt.Printf("Error fetching URL: %v\n", err)
 		return
 	}
+	defer response.Body.Close()
 	body, err := io.ReadAll(response.Body)
 	if err !=nil{
 		fmt.Printf("Error Getting  the Response  Body  : %v\n", err)
 		
 	}
 	len_of_res := len(body)
-	res_data:= string(body[:300])
+	previewLen := 300
+
+if len(body) < previewLen {
+    previewLen = len(body)
+}
+
+res_data := string(body[:previewLen])
 	res_type:= response.Header.Get("Content-Type")
+var prettyJSON []byte
+	var data  interface{}
+	if strings.Contains(res_type, "application/json"){
+err = json.Unmarshal(body, &data)
+if err != nil {
+    fmt.Println("unable to unmarshal")
+}
+	prettyJSON, err = json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		fmt.Print("preetier  unaplicable")
+	}
+	}
+	
 	res_header:= response.Header
-	defer response.Body.Close()
+	
 	fmt.Printf("Response Time: %v\n", end_time)
 	fmt.Printf("Status Code: %s\n", response.Status)
 		fmt.Printf("Length: %d\n", len_of_res)
+	if strings.Contains(res_type, "application/json") {
+		fmt.Printf("Response: %s\n",string(prettyJSON))
+	}else{
 			fmt.Printf("Response: %s\n",res_data)
+	}
 				fmt.Printf("Response Type: %s\n",res_type)
 				fmt.Printf("Response Header: %s\n",res_header)
-}   
+}  
