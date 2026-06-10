@@ -30,10 +30,14 @@ start_time:=time.Now()
 		
 	}
 	len_of_res := len(body)
-	res_data:= string(body)
+	res_data:= string(body[:300])
+	res_type:= response.Header.Get("Content-Type")
+	res_header:= response.Header
 	defer response.Body.Close()
 	fmt.Printf("Response Time: %v\n", end_time)
 	fmt.Printf("Status Code: %s\n", response.Status)
 		fmt.Printf("Length: %d\n", len_of_res)
 			fmt.Printf("Response: %s\n",res_data)
+				fmt.Printf("Response Type: %s\n",res_type)
+				fmt.Printf("Response Header: %s\n",res_header)
 }   
