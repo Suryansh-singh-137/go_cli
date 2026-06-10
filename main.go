@@ -55,7 +55,7 @@ if err != nil {
 	}
 	
 	res_header:= response.Header
-	
+fmt.Println("==================================== REQUEST SUMMARY ====================================")   
 	fmt.Printf("Response Time: %v\n", end_time)
 	fmt.Printf("Status Code: %s\n", response.Status)
 		fmt.Printf("Length: %d\n", len_of_res)
@@ -65,5 +65,10 @@ if err != nil {
 			fmt.Printf("Response: %s\n",res_data)
 	}
 				fmt.Printf("Response Type: %s\n",res_type)
-				fmt.Printf("Response Header: %s\n",res_header)
+		fmt.Println("==================================== RESPONSE HEADER ====================================")   
+				for key,value:= range res_header{
+					
+					fmt.Println(key,":",value)
+					
+				}
 }  
