@@ -12,11 +12,10 @@ import (
 
 func main() {
 	
-	if len(os.Args) < 2 {
-		fmt.Println("Usage: go run main.go <URL>")
+	if len(os.Args) <2{
+		fmt.Println("Usage: go run main.go <URL> <filename>")
 		return
 	}
-
 	userURL := os.Args[1]
 	fmt.Printf("FETCHING: %s\n", userURL)
 start_time:=time.Now()
@@ -53,8 +52,25 @@ if err != nil {
 		fmt.Print("preetier  unaplicable")
 	}
 	}
+
+	var dataToSave []byte
+if len(os.Args) > 2 {
+    if strings.Contains(res_type, "application/json") {
+    dataToSave = prettyJSON
+} else {
+    dataToSave = body
+}
+
+err = os.WriteFile(os.Args[2], dataToSave, 0644)
+if err != nil {
+    fmt.Printf("Error saving response to file: %v\n", err)
+}else{
 	
-	res_header:= response.Header
+fmt.Printf("Response saved to %s\n", os.Args[2])
+}
+}
+
+	res_header := response.Header
 fmt.Println("==================================== REQUEST SUMMARY ====================================")   
 	fmt.Printf("Response Time: %v\n", end_time)
 	fmt.Printf("Status Code: %s\n", response.Status)
