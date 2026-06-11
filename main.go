@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,7 +10,8 @@ import (
 	"strings"
 	"time"
 )
-// printing header  
+
+// printing header
 func printHeaders(headers http.Header) {
 	for key, value := range headers {
 		fmt.Println(key, ":", value)
@@ -64,17 +66,34 @@ if strings.Contains( contentType, "application/json") {
 fmt.Printf("Response Type: %s\n", contentType)
 		}
 func main() {
+	// defining flags 
+	bodyFlag := flag.String(
+	"body",
+	"",
+	"request body",
+)
+
+saveFlag := flag.String(
+	"save",
+	"",
+	"save response to file",
+)
+flag.Parse()
+args := flag.Args()
+fmt.Println("Raw Args:", os.Args)
+fmt.Println("Parsed Args:", args)
+fmt.Println("Body Flag:", *bodyFlag)
 	// ====================
 // Argument Validation
 // ====================
 // Expected usage:
 // go run main.go <URL> [filename]
-if len(os.Args) < 3  {
-	fmt.Println("Usage: go run main.go <METHOD> <URL> <filename>")
-	return
+if len(args) < 2 {
+    fmt.Println("Usage: go run main.go <METHOD> <URL> [--body data] [--save file]")
+    return
 }
-method:= os.Args[1];
-userURL := os.Args[2]
+method := args[0]
+userURL := args[1]
 fmt.Printf("FETCHING: %s\n", userURL)
 
 // ====================
@@ -84,7 +103,7 @@ fmt.Printf("FETCHING: %s\n", userURL)
 // so we can modify headers, methods, body, etc.
 start_time := time.Now()
 
-req, err := http.NewRequest(method , userURL, nil)
+req, err := http.NewRequest(method , userURL,  strings.NewReader(*bodyFlag),)
 if err != nil {
 	fmt.Println("unable to create a new request")
 	return
@@ -168,14 +187,14 @@ prettyJSON, err = prettyPrintJSON(body)
 // save the response to disk.
 var dataToSave []byte
 
-if len(os.Args) > 3 {
-filename:= os.Args[3]
+if *saveFlag!= ""{
+
 if strings.Contains(res_type, "application/json") {
 		dataToSave = prettyJSON
 } else {
 		dataToSave = body
 	}
-saveResponse(dataToSave,filename)
+saveResponse(dataToSave,*saveFlag)
 }
 // ====================
 // Display Results
