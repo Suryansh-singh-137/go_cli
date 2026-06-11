@@ -42,7 +42,7 @@ if err != nil {
 
 return prettyJSON, nil
 }
-func printSummary(   endTime time.Duration,
+func printSummary(  method string ,  endTime time.Duration,
     status string,
     responseLength int,
     contentType string,
@@ -50,7 +50,7 @@ func printSummary(   endTime time.Duration,
     previewData string ){
 
 fmt.Println("==================================== REQUEST SUMMARY ====================================")
-
+fmt.Printf("Method: %s\n", method)
 fmt.Printf("Response Time: %v\n", endTime)
 fmt.Printf("Status Code: %s\n", status)
 fmt.Printf("Length: %d\n", responseLength)
@@ -69,12 +69,12 @@ func main() {
 // ====================
 // Expected usage:
 // go run main.go <URL> [filename]
-if len(os.Args) < 2 {
-	fmt.Println("Usage: go run main.go <URL> <filename>")
+if len(os.Args) < 3  {
+	fmt.Println("Usage: go run main.go <METHOD> <URL> <filename>")
 	return
 }
-
-userURL := os.Args[1]
+method:= os.Args[1];
+userURL := os.Args[2]
 fmt.Printf("FETCHING: %s\n", userURL)
 
 // ====================
@@ -84,7 +84,7 @@ fmt.Printf("FETCHING: %s\n", userURL)
 // so we can modify headers, methods, body, etc.
 start_time := time.Now()
 
-req, err := http.NewRequest("GET", userURL, nil)
+req, err := http.NewRequest(method , userURL, nil)
 if err != nil {
 	fmt.Println("unable to create a new request")
 	return
@@ -168,8 +168,8 @@ prettyJSON, err = prettyPrintJSON(body)
 // save the response to disk.
 var dataToSave []byte
 
-if len(os.Args) > 2 {
-filename:= os.Args[2]
+if len(os.Args) > 3 {
+filename:= os.Args[3]
 if strings.Contains(res_type, "application/json") {
 		dataToSave = prettyJSON
 } else {
@@ -183,6 +183,7 @@ saveResponse(dataToSave,filename)
 res_header := response.Header
 
 printSummary(
+	method,
     end_time,
     response.Status,
     len_of_res,
