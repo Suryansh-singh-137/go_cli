@@ -16,15 +16,27 @@ func main() {
 		fmt.Println("Usage: go run main.go <URL> <filename>")
 		return
 	}
-	userURL := os.Args[1]
-	fmt.Printf("FETCHING: %s\n", userURL)
+userURL := os.Args[1]
+fmt.Printf("FETCHING: %s\n", userURL)
 start_time:=time.Now()
-	response, err := http.Get(userURL)
+req ,err:= http.NewRequest("GET" , userURL , nil)
+if err != nil {
+	fmt.Println("unable to create  a  new request")
+	return ;
+}
+	 client :=  http.Client{}
+	req.Header.Set(
+    "User-Agent",
+    "goproxy/1.0",
+)
+fmt.Println("Request Headers:")
+fmt.Println(req.Header)
+	response ,err:= client.Do(req)
+	if err!=nil {
+		fmt.Println("unbale  to  get a reponse  back from   the    server")
+		return ;
+	} 
 	end_time:=time.Since(start_time)
-	if err != nil {
-		fmt.Printf("Error fetching URL: %v\n", err)
-		return
-	}
 	defer response.Body.Close()
 	body, err := io.ReadAll(response.Body)
 	if err !=nil{
