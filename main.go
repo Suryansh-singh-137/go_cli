@@ -78,8 +78,15 @@ saveFlag := flag.String(
 	"",
 	"save response to file",
 )
+headerFlag := flag.String(
+    "header",
+    "",
+    "custom header in format Key: Value",
+)
+
 flag.Parse()
 args := flag.Args()
+fmt.Println(strings.SplitN(*headerFlag, ":",2))
 fmt.Println("Raw Args:", os.Args)
 fmt.Println("Parsed Args:", args)
 fmt.Println("Body Flag:", *bodyFlag)
@@ -88,10 +95,12 @@ fmt.Println("Body Flag:", *bodyFlag)
 // ====================
 // Expected usage:
 // go run main.go <URL> [filename]
+
 if len(args) < 2 {
     fmt.Println("Usage: go run main.go <METHOD> <URL> [--body data] [--save file]")
     return
 }
+
 method := args[0]
 userURL := args[1]
 fmt.Printf("FETCHING: %s\n", userURL)
@@ -108,13 +117,17 @@ if err != nil {
 	fmt.Println("unable to create a new request")
 	return
 }
-
+//  my user agent 
+req.Header.Set("User-Agent", "goproxy/1.0")
 // Add custom headers to the request
-req.Header.Set(
-	"User-Agent",
-	"goproxy/1.0",
-)
-
+if *headerFlag != "" {
+    // parse header
+    // add header
+		parts:= strings.SplitN(*headerFlag, ":",2)
+key := strings.TrimSpace(parts[0])
+value := strings.TrimSpace(parts[1])
+req.Header.Set(key,value)
+}
 fmt.Println("Request Headers:")
 fmt.Println(req.Header)
 
