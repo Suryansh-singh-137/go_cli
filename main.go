@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+// definin type for multiplt heaers
+type HeaderFlags []string
 // printing header
 func printHeaders(headers http.Header) {
 	for key, value := range headers {
@@ -65,7 +67,15 @@ if strings.Contains( contentType, "application/json") {
 
 fmt.Printf("Response Type: %s\n", contentType)
 		}
+func (h *HeaderFlags) Set(value string) error {
+    *h = append(*h, value)
+    return nil
+}
+func (h *HeaderFlags) String() string {
+    return strings.Join(*h, ", ")
+}
 func main() {
+	var headerFlags HeaderFlags
 	// defining flags 
 	bodyFlag := flag.String(
 	"body",
@@ -78,12 +88,12 @@ saveFlag := flag.String(
 	"",
 	"save response to file",
 )
-headerFlag := flag.String(
-    "header",
-    "",
-    "custom header in format Key: Value",
+flag.Var(
+	&headerFlags,
+	"header",
+	"custom header in format Key: Value",
 )
-timeoutFlag:= flag.Int(
+timeoutFlag := flag.Int(
 	"timeout",
 	10,
 	"request timeout in seconds",
@@ -120,13 +130,21 @@ if err != nil {
 //  my user agent 
 req.Header.Set("User-Agent", "goproxy/1.0")
 // Add custom headers to the request
-if *headerFlag != "" {
+if len(headerFlags) > 0 {
     // parse header
     // add header
-		parts:= strings.SplitN(*headerFlag, ":",2)
-key := strings.TrimSpace(parts[0])
-value := strings.TrimSpace(parts[1])
-req.Header.Set(key,value)
+    for _, header := range headerFlags {
+        parts := strings.SplitN(header, ":", 2)
+
+        if len(parts) != 2 {
+            fmt.Printf("Invalid header format: %s\n", header)
+            continue
+        }
+        key := strings.TrimSpace(parts[0])
+        value := strings.TrimSpace(parts[1])
+
+        req.Header.Set(key, value)
+    }
 }
 fmt.Println("Request Headers:")
 fmt.Println(req.Header)
