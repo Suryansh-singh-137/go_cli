@@ -83,13 +83,13 @@ headerFlag := flag.String(
     "",
     "custom header in format Key: Value",
 )
-
+timeoutFlag:= flag.Int(
+	"timeout",
+	10,
+	"request timeout in seconds",
+)
 flag.Parse()
 args := flag.Args()
-fmt.Println(strings.SplitN(*headerFlag, ":",2))
-fmt.Println("Raw Args:", os.Args)
-fmt.Println("Parsed Args:", args)
-fmt.Println("Body Flag:", *bodyFlag)
 	// ====================
 // Argument Validation
 // ====================
@@ -136,11 +136,13 @@ fmt.Println(req.Header)
 // ====================
 // The client is responsible for sending requests
 // and receiving responses.
-client := http.Client{}
+client := http.Client{
+	Timeout: time.Duration(*timeoutFlag)*time.Second,
+}
 
 response, err := client.Do(req)
 if err != nil {
-	fmt.Println("unable to get a response back from the server")
+	 fmt.Printf("Request failed: %v\n", err)
 	return
 }
 
