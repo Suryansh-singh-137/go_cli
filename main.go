@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -13,6 +14,7 @@ import (
 
 // definin type for multiplt heaers
 type HeaderFlags []string
+type QueryFlags  []string
 // printing header
 func printHeaders(headers http.Header) {
 	for key, value := range headers {
@@ -74,8 +76,16 @@ func (h *HeaderFlags) Set(value string) error {
 func (h *HeaderFlags) String() string {
     return strings.Join(*h, ", ")
 }
+func (h *QueryFlags) Set(value string) error {
+    *h = append(*h, value)
+    return nil
+}
+func (h *QueryFlags) String() string {
+    return strings.Join(*h, ", ")
+}
 func main() {
-	var headerFlags HeaderFlags
+	var headerFlags  HeaderFlags
+	var queryFlags QueryFlags
 	// defining flags 
 	bodyFlag := flag.String(
 	"body",
@@ -91,6 +101,11 @@ saveFlag := flag.String(
 flag.Var(
 	&headerFlags,
 	"header",
+	"custom header in format Key: Value",
+)
+flag.Var(
+	&queryFlags,
+	"query",
 	"custom header in format Key: Value",
 )
 timeoutFlag := flag.Int(
@@ -114,7 +129,28 @@ if len(args) < 2 {
 method := args[0]
 userURL := args[1]
 fmt.Printf("FETCHING: %s\n", userURL)
-
+if len(queryFlags)>0{
+	
+	parsedURL, err := url.Parse(userURL)
+	if err!= nil{
+		fmt.Println("error in parsing the url",err)
+		return 
+	}
+	params:= parsedURL.Query()
+	for _, query := range queryFlags {
+		parts := strings.SplitN(query, "=", 2)
+		if len(parts) != 2 {
+    fmt.Printf("Invalid query format: %s\n", query)
+    continue
+}
+		key := strings.TrimSpace(parts[0])
+value := strings.TrimSpace(parts[1])
+		params.Set(key,value)
+	}
+	parsedURL.RawQuery = params.Encode()
+	userURL = parsedURL.String()
+	
+}
 // ====================
 // Build HTTP Request
 // ====================
