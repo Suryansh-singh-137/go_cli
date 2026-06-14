@@ -1,3 +1,27 @@
-.env 
+# Binaries
+goproxy
+goproxy.exe
+
+# Build outputs
+bin/
+dist/
+
+# Test binaries
+*.test
+
+# Coverage reports
+*.out
+coverage.out
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local config (if you add it later)
+.env
+config.local.json
 architecture.txt
-data.txt
