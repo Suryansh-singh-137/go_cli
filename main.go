@@ -15,6 +15,50 @@ import (
 // definin type for multiplt heaers
 type HeaderFlags []string
 type QueryFlags  []string
+// builidng  url  
+func buildURL(userURL string, queryFlags QueryFlags) (string, error) {
+    parsedURL, err := url.Parse(userURL)
+    if err != nil {
+        return "", err
+    }
+
+    params := parsedURL.Query()
+
+    for _, query := range queryFlags {
+        parts := strings.SplitN(query, "=", 2)
+
+        if len(parts) != 2 {
+            fmt.Printf("Invalid query format: %s\n", query)
+            continue
+        }
+
+        key := strings.TrimSpace(parts[0])
+        value := strings.TrimSpace(parts[1])
+
+        params.Set(key, value)
+    }
+
+    parsedURL.RawQuery = params.Encode()
+
+    return parsedURL.String(), nil
+}
+//apply hedaaders assigned  by user to the request 
+func applyHeaders(req *http.Request, headers HeaderFlags){
+	  // parse header
+    // add header
+	for _, header := range headers {
+        parts := strings.SplitN(header, ":", 2)
+
+        if len(parts) != 2 {
+            fmt.Printf("Invalid header format: %s\n", header)
+            continue
+        }
+        key := strings.TrimSpace(parts[0])
+        value := strings.TrimSpace(parts[1])
+
+        req.Header.Set(key, value)
+    }
+}
 // printing header
 func printHeaders(headers http.Header) {
 	for key, value := range headers {
@@ -128,27 +172,16 @@ if len(args) < 2 {
 
 method := args[0]
 userURL := args[1]
+var err error
+
 fmt.Printf("FETCHING: %s\n", userURL)
 if len(queryFlags)>0{
 	
-	parsedURL, err := url.Parse(userURL)
-	if err!= nil{
-		fmt.Println("error in parsing the url",err)
-		return 
-	}
-	params:= parsedURL.Query()
-	for _, query := range queryFlags {
-		parts := strings.SplitN(query, "=", 2)
-		if len(parts) != 2 {
-    fmt.Printf("Invalid query format: %s\n", query)
-    continue
+	userURL, err= buildURL(userURL, queryFlags)
+if err != nil {
+    fmt.Printf("Failed to build URL: %v\n", err)
+    return
 }
-		key := strings.TrimSpace(parts[0])
-value := strings.TrimSpace(parts[1])
-		params.Set(key,value)
-	}
-	parsedURL.RawQuery = params.Encode()
-	userURL = parsedURL.String()
 	
 }
 // ====================
@@ -167,20 +200,7 @@ if err != nil {
 req.Header.Set("User-Agent", "goproxy/1.0")
 // Add custom headers to the request
 if len(headerFlags) > 0 {
-    // parse header
-    // add header
-    for _, header := range headerFlags {
-        parts := strings.SplitN(header, ":", 2)
-
-        if len(parts) != 2 {
-            fmt.Printf("Invalid header format: %s\n", header)
-            continue
-        }
-        key := strings.TrimSpace(parts[0])
-        value := strings.TrimSpace(parts[1])
-
-        req.Header.Set(key, value)
-    }
+ applyHeaders(req,headerFlags);
 }
 fmt.Println("Request Headers:")
 fmt.Println(req.Header)
