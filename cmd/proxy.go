@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/spf13/cobra"
@@ -27,11 +28,29 @@ var startCmd = &cobra.Command{
 			  fmt.Println("Proxy listening on :8080")
 http.HandleFunc("/",func(w http.ResponseWriter ,  r *http.Request){
  fmt.Println("Received request:")
-    fmt.Println(r.Method, r.URL.Path)
+fmt.Println("================================")
+fmt.Println("Incoming Request")
+fmt.Println("Method:", r.Method)
+fmt.Println("Path:", r.URL.Path)
+fmt.Println("Host:", r.Host)
+fmt.Println("Remote Addr:", r.RemoteAddr)
+fmt.Println("Query Params:")
+// printing req params  
+for key, values := range r.URL.Query() {
+    fmt.Printf("%s = %v\n", key, values)
+}
+// printing req body 
+body,err:= io.ReadAll(r.Body)
+if err!=nil{
+	fmt.Println("unable to read request bosy",err)
+}
+fmt.Println(string(body))
+
 for key,values := range r.Header{
 	fmt.Printf("%s: %v\n", key, values)
 }
-    w.Write([]byte("Hello from goproxy"))
+
+
 })
     err := http.ListenAndServe(":8080", nil)
 
