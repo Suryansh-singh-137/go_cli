@@ -28,7 +28,9 @@ var startCmd = &cobra.Command{
 http.HandleFunc("/",func(w http.ResponseWriter ,  r *http.Request){
  fmt.Println("Received request:")
     fmt.Println(r.Method, r.URL.Path)
-
+for key,values := range r.Header{
+	fmt.Printf("%s: %v\n", key, values)
+}
     w.Write([]byte("Hello from goproxy"))
 })
     err := http.ListenAndServe(":8080", nil)
@@ -36,6 +38,7 @@ http.HandleFunc("/",func(w http.ResponseWriter ,  r *http.Request){
     if err != nil {
         fmt.Println(err)
     }
+	
 		},
 }
 func init() {
