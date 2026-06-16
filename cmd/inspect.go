@@ -1,12 +1,12 @@
 /*
 Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
 import (
 	"fmt"
-	  "goproxy/internal/httpclient"
+	"goproxy/internal/httpclient"
+	"net/http"
 
 	"github.com/spf13/cobra"
 )
@@ -48,7 +48,38 @@ Run: func(cmd *cobra.Command, args []string) {
     }
 
     fmt.Println("Final URL:", finalURL)
+// bilding request 
+req, err := http.NewRequest(
+    method,
+    finalURL,
+    nil,
+)
+if err != nil {
+    fmt.Println("Failed to create request:", err)
+    return
+}
+// apply heaader 
+httpclient.ApplyHeaders(req,  []string{
+        "X-Test: hello",
+    },)
+		fmt.Println(req.Header)
+		// send request 
+		response, err := httpclient.SendRequest(req, 10)
+		if  err!=nil{
+			fmt.Println("error while sending the request",err)
+			return 
+		}
+		fmt.Println(response)
+		body, err := httpclient.ReadResponseBody(response)
+if err != nil {
+    fmt.Println(err)
+    return
+}
+
+fmt.Println("Body Size:", len(body))
+
 },
+
 }
 
 func init() {
