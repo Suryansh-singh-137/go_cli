@@ -7,12 +7,19 @@ import (
 	"fmt"
 	"goproxy/internal/httpclient"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 )
 
 // inspectCmd represents the inspect command
+// defining flags  for  inspect cmnd
 var  headers []string 
+var  timeout  int 
+var query []string  
+var  body string 
+var  save string 
 var inspectCmd = &cobra.Command{
 	Use:   "inspect",
 	Short: "A brief description of your command",
@@ -37,10 +44,7 @@ Run: func(cmd *cobra.Command, args []string) {
 
     finalURL, err := httpclient.BuildURL(
         userURL,
-        []string{
-            "q=tom",
-            "page=1",
-        },
+      query,
     )
 
     if err != nil {
@@ -53,7 +57,11 @@ Run: func(cmd *cobra.Command, args []string) {
 req, err := http.NewRequest(
     method,
     finalURL,
-    nil,
+ strings.NewReader(body),
+)
+req.Header.Set(
+    "User-Agent",
+    "goproxy/1.0",
 )
 if err != nil {
     fmt.Println("Failed to create request:", err)
@@ -63,26 +71,56 @@ if err != nil {
 httpclient.ApplyHeaders(req,  headers,)
 		fmt.Println(req.Header)
 		// send request 
-		response, err := httpclient.SendRequest(req, 10)
+		startTime := time.Now()
+		response, err := httpclient.SendRequest(req, timeout)
+		endTime := time.Since(startTime)
 		if  err!=nil{
 			fmt.Println("error while sending the request",err)
 			return 
 		}
+		defer response.Body.Close()
 		fmt.Println(response)
-		body, err := httpclient.ReadResponseBody(response)
+		responseBody, err := httpclient.ReadResponseBody(response)
+		contentType := response.Header.Get("Content-Type")
 if err != nil {
     fmt.Println(err)
     return
 }
-defer response.Body.Close()
-fmt.Println("Body Size:", len(body))
-  prettyJSON, err := httpclient.PrettyPrintJSON(body)
+previewLen := 300
+fmt.Println("Body Size:", len(responseBody))
+
+if len(responseBody) < previewLen {
+    previewLen = len(responseBody)
+}
+
+previewData := string(responseBody[:previewLen])
+  prettyJSON, err := httpclient.PrettyPrintJSON(responseBody)
 if err != nil {
     fmt.Println("unable to pretty print json")
     return
 }
-fmt.Println(string(prettyJSON))
-fmt.Println("Headers:", headers)
+// building struct 
+summary := httpclient.Summary{
+    Method:         method,
+    ResponseTime:   endTime,
+    Status:         response.Status,
+    ResponseLength: len(responseBody),
+    ContentType:    contentType,
+    PrettyJSON:     prettyJSON,
+    PreviewData:    previewData,
+}
+//save resposne 
+if save != "" {
+
+    if strings.Contains(contentType, "application/json") {
+        httpclient.SaveResponse(prettyJSON, save)
+    } else {
+        httpclient.SaveResponse(responseBody, save)
+    }
+
+}
+httpclient.PrintSummary(summary)
+
 },
 
 }
@@ -95,6 +133,30 @@ func init() {
         "header",
         []string{},
         "custom headers",
+    )
+		inspectCmd.Flags().IntVar(
+    &timeout,
+    "timeout",
+    30,
+    "request timeout in seconds",
+)
+  inspectCmd.Flags().StringSliceVar(
+        &query,
+        "query",
+        []string{},
+        "query parameters",
+    )
+		  inspectCmd.Flags().StringVar(
+        &body,
+        "body",
+       "",
+        "request  body",
+    )
+		inspectCmd.Flags().StringVar(
+        &save,
+        "save",
+       "",
+        "save reponse from server in provided file",
     )
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:

@@ -10,6 +10,15 @@ import (
 	"strings"
 	"time"
 )
+type Summary struct {
+    Method         string
+    ResponseTime   time.Duration
+    Status         string
+    ResponseLength int
+    ContentType    string
+    PrettyJSON     []byte
+    PreviewData    string
+} 
 func  SaveResponse(dataToSave [] byte,filename string){
 		err := os.WriteFile(filename, dataToSave, 0644)
 
@@ -34,26 +43,21 @@ if err != nil {
 
 return prettyJSON, nil
 }
-func printSummary(  method string ,  endTime time.Duration,
-    status string,
-    responseLength int,
-    contentType string,
-    prettyJSON []byte,
-    previewData string ){
+func PrintSummary(  summary Summary ){
 
 fmt.Println("==================================== REQUEST SUMMARY ====================================")
-fmt.Printf("Method: %s\n", method)
-fmt.Printf("Response Time: %v\n", endTime)
-fmt.Printf("Status Code: %s\n", status)
-fmt.Printf("Length: %d\n", responseLength)
+fmt.Printf("Method: %s\n", summary.Method)
+fmt.Printf("Response Time: %v\n", summary.ResponseTime)
+fmt.Printf("Status Code: %s\n", summary.Status)
+fmt.Printf("Length: %d\n", summary.ResponseLength)
 
-if strings.Contains( contentType, "application/json") {
-	fmt.Printf("Response: %s\n", string(prettyJSON))
+if strings.Contains( summary.ContentType, "application/json") {
+	fmt.Printf("Response: %s\n", string(summary.PrettyJSON))
 } else {
-	fmt.Printf("Response: %s\n",previewData)
+	fmt.Printf("Response: %s\n",summary.PreviewData)
 }
 
-fmt.Printf("Response Type: %s\n", contentType)
+fmt.Printf("Response Type: %s\n", summary.ContentType)
 		}
 func BuildURL(userURL string,queries []string) (string, error) {
 
