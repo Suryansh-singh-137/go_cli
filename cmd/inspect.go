@@ -75,9 +75,15 @@ if err != nil {
     fmt.Println(err)
     return
 }
-
+defer response.Body.Close()
 fmt.Println("Body Size:", len(body))
+  prettyJSON, err := httpclient.PrettyPrintJSON(body)
+if err != nil {
+    fmt.Println("unable to pretty print json")
+    return
+}
 
+fmt.Println(string(prettyJSON))
 },
 
 }

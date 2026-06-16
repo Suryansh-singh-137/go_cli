@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 )
-func  saveResponse(dataToSave [] byte,filename string){
+func  SaveResponse(dataToSave [] byte,filename string){
 		err := os.WriteFile(filename, dataToSave, 0644)
 
 	if err != nil {
@@ -19,7 +19,7 @@ func  saveResponse(dataToSave [] byte,filename string){
 		fmt.Printf("Response saved to %s\n", filename)
 	}
 }
-func prettyPrintJSON(body []byte) ([]byte, error){
+func PrettyPrintJSON(body []byte) ([]byte, error){
 	var data interface{}
 
 err := json.Unmarshal(body, &data)
