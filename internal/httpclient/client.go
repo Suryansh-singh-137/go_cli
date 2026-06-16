@@ -118,6 +118,5 @@ func SendRequest(req *http.Request, timeout int) (*http.Response, error) {
 func ReadResponseBody(
     response *http.Response,
 ) ([]byte, error) {
-
     return io.ReadAll(response.Body)
 }

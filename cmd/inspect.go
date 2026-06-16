@@ -12,6 +12,7 @@ import (
 )
 
 // inspectCmd represents the inspect command
+var  headers []string 
 var inspectCmd = &cobra.Command{
 	Use:   "inspect",
 	Short: "A brief description of your command",
@@ -59,9 +60,7 @@ if err != nil {
     return
 }
 // apply heaader 
-httpclient.ApplyHeaders(req,  []string{
-        "X-Test: hello",
-    },)
+httpclient.ApplyHeaders(req,  headers,)
 		fmt.Println(req.Header)
 		// send request 
 		response, err := httpclient.SendRequest(req, 10)
@@ -82,17 +81,21 @@ if err != nil {
     fmt.Println("unable to pretty print json")
     return
 }
-
 fmt.Println(string(prettyJSON))
+fmt.Println("Headers:", headers)
 },
 
 }
-
 func init() {
 	rootCmd.AddCommand(inspectCmd)
 
 	// Here you will define your flags and configuration settings.
-
+  inspectCmd.Flags().StringSliceVar(
+        &headers,
+        "header",
+        []string{},
+        "custom headers",
+    )
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
 	// inspectCmd.PersistentFlags().String("foo", "", "A help for foo")
