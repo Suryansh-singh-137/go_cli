@@ -6,6 +6,7 @@ package cmd
 
 import (
 	"fmt"
+	  "goproxy/internal/httpclient"
 
 	"github.com/spf13/cobra"
 )
@@ -20,19 +21,34 @@ and usage of using your command. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("inspect called")
-		if len(args) < 2 {
-    fmt.Println("Usage: inspect <METHOD> <URL>")
-    return
-}
+Run: func(cmd *cobra.Command, args []string) {
 
-method := args[0]
-url := args[1]
+    if len(args) < 2 {
+        fmt.Println("Usage: inspect <METHOD> <URL>")
+        return
+    }
 
-fmt.Println("Method:", method)
-fmt.Println("URL:", url)
-	},
+    method := args[0]
+    userURL := args[1]
+
+    fmt.Println("Method:", method)
+    fmt.Println("URL:", userURL)
+
+    finalURL, err := httpclient.BuildURL(
+        userURL,
+        []string{
+            "q=tom",
+            "page=1",
+        },
+    )
+
+    if err != nil {
+        fmt.Println("Error:", err)
+        return
+    }
+
+    fmt.Println("Final URL:", finalURL)
+},
 }
 
 func init() {
