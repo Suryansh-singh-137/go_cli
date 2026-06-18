@@ -32,8 +32,9 @@ http.HandleFunc("/",func(w http.ResponseWriter ,  r *http.Request){
 fmt.Println("================================")
 fmt.Println("Incoming Request")
 fmt.Println("Method:", r.Method)
-fmt.Println("Path:", r.URL.String())
-fmt.Println("Host:", r.Host)
+fmt.Println("URL String:", r.URL.String())
+fmt.Println("RequestURI :", r.URL.RequestURI())
+fmt.Println("Host       :", r.Host)
 fmt.Println("Remote Addr:", r.RemoteAddr)
 fmt.Println("Query Params:")
 // printing req params  
@@ -46,15 +47,15 @@ if err!=nil{
 	fmt.Println("unable to read request bosy",err)
 }
 fmt.Println(string(body))
-
+defer r.Body.Close()
 for key,values := range r.Header{
 	fmt.Printf("%s: %v\n", key, values)
 }
 // creaeting a reuwst  to  fowraed it to my serve using  my sereer as proxy
-user_requested_url:= "https://httpbingo.org"+   r.URL.RequestURI()
+
 req, err := http.NewRequest(
     r.Method,
-   user_requested_url,
+r.URL.String()  ,
      bytes.NewReader(body),
 )
 if err != nil {
@@ -64,7 +65,7 @@ if err != nil {
 // setiing headers  fo rour req  
 for key,values := range  r.Header{
 	for _,value := range values{
-		req.Header.Set(key,value)
+		req.Header.Add(key,value)
 	}
 }
 client := &http.Client{}
