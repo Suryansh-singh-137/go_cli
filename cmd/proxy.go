@@ -4,6 +4,7 @@ Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"net/http"
@@ -49,14 +50,48 @@ fmt.Println(string(body))
 for key,values := range r.Header{
 	fmt.Printf("%s: %v\n", key, values)
 }
+// creaeting a reuwst  to  fowraed it to my serve using  my sereer as proxy
+user_requested_url:= "https://httpbingo.org"+   r.URL.RequestURI()
+req, err := http.NewRequest(
+    r.Method,
+   user_requested_url,
+     bytes.NewReader(body),
+)
+if err != nil {
+    fmt.Println(err)
+    return
+}
+// setiing headers  fo rour req  
+for key,values := range  r.Header{
+	for _,value := range values{
+		req.Header.Set(key,value)
+	}
+}
+client := &http.Client{}
+response, err := client.Do(req)
 
+if err != nil {
+    fmt.Println(err)
+    return
+}
+defer response.Body.Close()
+responseBody, err := io.ReadAll(response.Body)
+if err != nil {
+    fmt.Println(err)
+    return
+}
+_, err = w.Write(responseBody)
 
+if err != nil {
+    fmt.Println(err)
+}
 })
     err := http.ListenAndServe(":8080", nil)
 
     if err != nil {
         fmt.Println(err)
     }
+		
 	
 		},
 }
