@@ -32,7 +32,7 @@ http.HandleFunc("/",func(w http.ResponseWriter ,  r *http.Request){
 fmt.Println("================================")
 fmt.Println("Incoming Request")
 fmt.Println("Method:", r.Method)
-fmt.Println("Path:", r.URL.Path)
+fmt.Println("Path:", r.URL.String())
 fmt.Println("Host:", r.Host)
 fmt.Println("Remote Addr:", r.RemoteAddr)
 fmt.Println("Query Params:")
@@ -80,8 +80,16 @@ if err != nil {
     fmt.Println(err)
     return
 }
+// copying the header back to the client browser
+for key, values := range response.Header {
+    for _, value := range values {
+        w.Header().Add(key, value)
+    }
+}
+// sending status code to broswer
+w.WriteHeader(response.StatusCode)
+// sending the body  to  browser
 _, err = w.Write(responseBody)
-
 if err != nil {
     fmt.Println(err)
 }
