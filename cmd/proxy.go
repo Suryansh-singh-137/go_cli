@@ -11,7 +11,21 @@ import (
 
 	"github.com/spf13/cobra"
 )
-
+func isHopByHopHeader(header string) bool {
+	switch http.CanonicalHeaderKey(header) {
+	case "Connection",
+		"Keep-Alive",
+		"Proxy-Authenticate",
+		"Proxy-Authorization",
+		"Proxy-Connection",
+		"Te",
+		"Trailer",
+		"Transfer-Encoding",
+		"Upgrade":
+		return true
+	}
+	return false
+}
 // proxyCmd represents the proxy command
 var proxyCmd = &cobra.Command{
 	Use:   "proxy",
@@ -42,12 +56,13 @@ for key, values := range r.URL.Query() {
     fmt.Printf("%s = %v\n", key, values)
 }
 // printing req body 
+defer r.Body.Close()
 body,err:= io.ReadAll(r.Body)
 if err!=nil{
 	fmt.Println("unable to read request bosy",err)
 }
 fmt.Println(string(body))
-defer r.Body.Close()
+
 for key,values := range r.Header{
 	fmt.Printf("%s: %v\n", key, values)
 }
@@ -63,10 +78,14 @@ if err != nil {
     return
 }
 // setiing headers  fo rour req  
-for key,values := range  r.Header{
-	for _,value := range values{
-		req.Header.Add(key,value)
-	}
+for key, values := range r.Header {
+    if isHopByHopHeader(key) {
+        continue
+    }
+
+    for _, value := range values {
+        req.Header.Add(key, value)
+    }
 }
 client := &http.Client{}
 response, err := client.Do(req)
@@ -83,6 +102,10 @@ if err != nil {
 }
 // copying the header back to the client browser
 for key, values := range response.Header {
+    if isHopByHopHeader(key) {
+        continue
+    }
+
     for _, value := range values {
         w.Header().Add(key, value)
     }
