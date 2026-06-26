@@ -1,7 +1,12 @@
 package tui
 
 import tea "github.com/charmbracelet/bubbletea"
-
+type Screen int
+const (
+    MainMenu Screen = iota
+    HTTPClientScreen
+    ProxyScreen
+)
 var menuItems = []string{
 	"HTTP Client",
 	"Proxy Server",
@@ -10,11 +15,13 @@ var menuItems = []string{
 
 type Model struct {
 	selected int
+	screen Screen
 }
 
 func New() Model {
 	return Model{
 		selected: 0,
+		screen:  MainMenu,
 	}
 }
 
@@ -23,18 +30,17 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) View() string {
-   var output string
+switch m.screen {
 
-output += "GoProxy\n"
-output += "HTTP Client & Forward Proxy\n\n"
-for i, item := range menuItems {
-	if i  == m.selected{
-		output+= "> "+item+"\n"
-	}else {
-		output+="  "+item+"\n"
-	}
+case MainMenu:
+    return m.renderMainMenu()
+
+case HTTPClientScreen:
+    return m.renderHTTPClient()
+
+case ProxyScreen:
+    return m.renderProxy()
 }
-return output
 }
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
