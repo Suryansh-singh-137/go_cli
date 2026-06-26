@@ -4,9 +4,10 @@ Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
+	"goproxy/internal/tui"
 	"os"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +25,11 @@ to quickly create a Cobra application.`,
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
 	Run: func(cmd *cobra.Command, args []string) {
-    fmt.Println("Hello from Cobra!")
+    model := tui.New()
+
+program := tea.NewProgram(model)
+
+program.Run()
 },
 }
 
