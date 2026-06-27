@@ -1,1 +1,4 @@
 package  tui  
+func (m Model) View() string{
+	
+}
