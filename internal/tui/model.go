@@ -16,6 +16,7 @@ var menuItems = []string{
 type Model struct {
 	selected int
 	screen Screen
+	http  HTTPClientState
 }
 
 func New() Model {
