@@ -35,6 +35,17 @@ case 2:
 
 case HTTPClientScreen:
    switch msg.String() {
+			
+  case "up":
+	m.http.selectedField = HTTPField((int(m.http.selectedField) - 1 + len(httpclientitems)) % len(httpclientitems))
+
+	case "down":
+			m.http.selectedField = HTTPField((int(m.http.selectedField) + 1) % len(httpclientitems))
+
+
+	case "q", "ctrl+c":
+		return m, tea.Quit
+
 
 case "esc":
     m.screen = MainMenu

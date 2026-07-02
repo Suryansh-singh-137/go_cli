@@ -24,19 +24,17 @@ var httpclientitems = []string{
 	"header",
     "body",
     "timeout",
-    "send"
+    "send",
 }
 
 func (m Model) renderHTTPClient() string {
-    var  output string;
-    output = "HTTP Client"
-    for i,item := range  httpclientitems{
-        	if i == m.HTTPField {
-			output += "> " + httpclientitems + "\n"
+	output := "HTTP Client\n\n"
+	for i, item := range httpclientitems {
+		if i == int(m.http.selectedField) {
+			output += "> " + item + "\n"
 		} else {
-			output += "  " + httpclientitems + "\n"
+			output += "  " + item + "\n"
 		}
-
-    }
-
+	}
+	return output
 }
