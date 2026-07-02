@@ -9,15 +9,7 @@ const (
     TimeoutField
     SendField
 )
-type HTTPClientState struct {
-    selectedField HTTPField
 
-    method  string
-    url     string
-    headers []string
-    body    string
-    timeout int
-}
 var httpclientitems = []string{
 	"method",
 	"url",
@@ -28,13 +20,21 @@ var httpclientitems = []string{
 }
 
 func (m Model) renderHTTPClient() string {
-	output := "HTTP Client\n\n"
+	var output string
+	output = "HTTP Client\n\n"
+	
 	for i, item := range httpclientitems {
 		if i == int(m.http.selectedField) {
 			output += "> " + item + "\n"
+			
+			// ← NEW: When URL field is selected, show the textinput below it
+			if HTTPField(i) == URLField {
+				output += "  " + m.http.urlInput.View() + "\n"
+			}
 		} else {
 			output += "  " + item + "\n"
 		}
 	}
+	
 	return output
 }

@@ -34,23 +34,27 @@ case 2:
 	}
 
 case HTTPClientScreen:
-   switch msg.String() {
-			
-  case "up":
-	m.http.selectedField = HTTPField((int(m.http.selectedField) - 1 + len(httpclientitems)) % len(httpclientitems))
+switch msg.String() {
+	
+	case "up":
+		m.http.selectedField = HTTPField((int(m.http.selectedField) - 1 + len(httpclientitems)) % len(httpclientitems))
+		return m, nil
 
 	case "down":
-			m.http.selectedField = HTTPField((int(m.http.selectedField) + 1) % len(httpclientitems))
+		m.http.selectedField = HTTPField((int(m.http.selectedField) + 1) % len(httpclientitems))
+		return m, nil
 
-
-	case "q", "ctrl+c":
-		return m, tea.Quit
-
-
-case "esc":
-    m.screen = MainMenu
-}
-
+	case "esc":
+		m.screen = MainMenu
+		return m, nil
+	}
+	
+	// ← NEW: If URL field is selected, let textinput handle ANY keystroke
+	if m.http.selectedField == URLField {
+		updated, cmd := m.http.urlInput.Update(msg)
+		m.http.urlInput = updated
+		return m, cmd
+	}
 case ProxyScreen:
    switch msg.String() {
 
