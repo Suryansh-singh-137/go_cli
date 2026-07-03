@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"goproxy/internal/httpclient"
+
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -12,14 +14,16 @@ type HTTPClientState struct {
 	headers       []string
 	body          string
 	timeout       int
-	urlInput      textinput.Model  // ← add this
+	urlInput      textinput.Model
+	response      *httpclient.Summary  // ← NEW: store the response
+	responseBody  []byte               // ← NEW: raw response bytes
 }
-
 type Screen int
 const (
     MainMenu Screen = iota
     HTTPClientScreen
     ProxyScreen
+		HTTPResponseScreen  
 )
 var menuItems = []string{
 	"HTTP Client",
@@ -33,19 +37,25 @@ type Model struct {
 	http  HTTPClientState
 }
 func New() Model {
-	// Create a fresh textinput
 	urlInput := textinput.New()
 	urlInput.Placeholder = "https://example.com"
 	urlInput.CharLimit = 2048
 	urlInput.Width = 50
-	urlInput.Focus()  // ← ADD THIS LINE — enables the textinput to accept input
+	urlInput.Focus()
 
 	return Model{
 		selected: 0,
 		screen:   MainMenu,
 		http: HTTPClientState{
 			selectedField: MethodField,
+			method:        "GET",
+			url:           "",
+			headers:       []string{},
+			body:          "",
+			timeout:       30,
 			urlInput:      urlInput,
+			response:      nil,  // ← start with no response
+			responseBody:  nil,
 		},
 	}
 }

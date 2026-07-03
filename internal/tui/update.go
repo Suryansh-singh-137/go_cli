@@ -1,6 +1,12 @@
 package tui
 
-import tea "github.com/charmbracelet/bubbletea"
+import (
+	"goproxy/internal/httpclient"
+	"net/http"
+	"time"
+
+	tea "github.com/charmbracelet/bubbletea"
+)
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -34,8 +40,8 @@ case 2:
 	}
 
 case HTTPClientScreen:
-switch msg.String() {
-	
+	switch msg.String() {
+
 	case "up":
 		m.http.selectedField = HTTPField((int(m.http.selectedField) - 1 + len(httpclientitems)) % len(httpclientitems))
 		return m, nil
@@ -44,12 +50,67 @@ switch msg.String() {
 		m.http.selectedField = HTTPField((int(m.http.selectedField) + 1) % len(httpclientitems))
 		return m, nil
 
+	case "enter":  // ← NEW: handle Enter on Send button
+		if m.http.selectedField == SendField {
+			// Extract URL from textinput
+			finalURL := m.http.urlInput.Value()
+
+			// Build the request (for now, just GET with the URL)
+			req, err := http.NewRequest(m.http.method, finalURL, nil)
+			if err != nil {
+				// TODO: show error message in UI
+				return m, nil
+			}
+
+			// Send it
+			startTime := time.Now()
+			response, err := httpclient.SendRequest(req, m.http.timeout)
+			responseTime := time.Since(startTime)
+			if err != nil {
+				// TODO: show error message in UI
+				return m, nil
+			}
+			defer response.Body.Close()
+
+			// Read response body
+			responseBody, err := httpclient.ReadResponseBody(response)
+			if err != nil {
+				return m, nil
+			}
+
+			// Try to pretty-print as JSON
+			prettyJSON, err := httpclient.PrettyPrintJSON(responseBody)
+			if err != nil {
+				prettyJSON = responseBody
+			}
+
+			// Build summary
+			summary := httpclient.Summary{
+				Method:         m.http.method,
+				ResponseTime:   responseTime,
+				Status:         response.Status,
+				ResponseLength: len(responseBody),
+				ContentType:    response.Header.Get("Content-Type"),
+				PrettyJSON:     prettyJSON,
+				PreviewData:    string(responseBody[:min(len(responseBody), 300)]),
+			}
+
+			// Store in model
+			m.http.response = &summary
+			m.http.responseBody = responseBody
+
+			// Show response screen (we'll create this next)
+			m.screen = HTTPResponseScreen
+
+			return m, nil
+		}
+
 	case "esc":
 		m.screen = MainMenu
 		return m, nil
 	}
-	
-	// ← NEW: If URL field is selected, let textinput handle ANY keystroke
+
+	// If URL field is selected, let textinput handle keystrokes
 	if m.http.selectedField == URLField {
 		updated, cmd := m.http.urlInput.Update(msg)
 		m.http.urlInput = updated
@@ -61,6 +122,12 @@ case ProxyScreen:
 case "esc":
     m.screen = MainMenu
 }
+case HTTPResponseScreen:
+	switch msg.String() {
+	case "esc":
+		m.screen = HTTPClientScreen
+		return m, nil
+	}
 }
 	}
 	   return m, nil
