@@ -26,7 +26,7 @@ func (m Model) renderHTTPResponse() string {
 		output += "Response Body (JSON):\n"
 		output += string(resp.PrettyJSON)
 	} else {
-		output += "Response Body (Preview):\n"
+		output += "Response Body (Prev`iew):\n"
 		output += resp.PreviewData
 		if resp.ResponseLength > 300 {
 			output += "\n... (truncated, total " + fmt.Sprintf("%d", resp.ResponseLength) + " bytes)"
